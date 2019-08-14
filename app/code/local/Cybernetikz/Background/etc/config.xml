@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Cybernetikz_Background>
-            <version>0.4.0</version>
+            <version>0.5.0</version>
         </Cybernetikz_Background>
     </modules>
     

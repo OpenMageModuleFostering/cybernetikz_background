@@ -62,7 +62,7 @@ class Cybernetikz_Background_Block_Background extends Mage_Core_Block_Template{
 		
 		
 		// If background not found, check default background
-		if($collection->count() || $collection->count()==0){
+		if(!$collection->count() || $collection->count()==0){
 			$collection = Mage::getResourceModel('background/background_collection');
 			$collection->addFieldToFilter('page_id',"0");
 			$collection->addFieldToFilter('bg_type',"default");
