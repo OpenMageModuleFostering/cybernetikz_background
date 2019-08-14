@@ -1,14 +1,23 @@
-<?php	
-	$_backgroundCollection=$this->getBackgroundCollection()->getData();
-	$background=false;
-	$count=count($_backgroundCollection);
-	if($count>0){
-		$background=true;
-	}	
+<?php
+	$_backgroundCollections = $this->getBackgroundCollection();
 ?>
-
-<?php if($background===true):?>
+<?php if($_backgroundCollections->count()>0):?>
 	<style type="text/css">
-		body{background:#000 url(<?php echo $this->getImageUrl($_backgroundCollection[0]['image_url']); ?>) repeat top center fixed !important;}
+	<?php foreach($_backgroundCollections as $_background):?>
+		<?php 
+			// If selector NULL, set default 'body' as selector
+			if(!$_background->getSelector()){ $_background->setSelector('body'); }
+		?>
+		<?php echo $_background->getSelector();?>{
+			background-image: url("<?php echo $this->getImageFullUrl($_background->getImageUrl()); ?>") !important;
+			background-color: <?php echo $_background->getColor();?> !important;
+			background-repeat: <?php echo $_background->getRepeat();?> !important;
+			background-position: <?php echo $_background->getPosition();?> !important;
+			background-attachment: <?php echo $_background->getAttachment();?> !important;
+			background-size: <?php echo $_background->getSize();?> !important;
+			background-origin: <?php echo $_background->getOrigin();?> !important;
+			background-clip: <?php echo $_background->getClip();?> !important;
+		}
+	<?php endforeach; ?>
     </style>
 <?php endif;?>

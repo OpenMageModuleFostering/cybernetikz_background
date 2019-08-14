@@ -2,7 +2,7 @@
 <config>
     <modules>
         <Cybernetikz_Background>
-            <version>0.3.0</version>
+            <version>0.4.0</version>
         </Cybernetikz_Background>
     </modules>
     
@@ -52,16 +52,16 @@
             </background_read>
         </resources>
     </global>
-    
-    <admin>
+	
+	<admin>
         <routers>
-            <background>
-                <use>admin</use>
+            <adminhtml>
                 <args>
-                    <module>Cybernetikz_Background</module>
-                    <frontName>background</frontName>
+                    <modules>
+                        <Cybernetikz_Background before="Mage_Adminhtml">Cybernetikz_Background_Adminhtml</Cybernetikz_Background>
+                    </modules>
                 </args>
-            </background>
+            </adminhtml>
         </routers>
     </admin>
     
@@ -92,7 +92,7 @@
                     <background_adminform translate="title" module="background">
                         <title>Manage Background</title>
 						<sort_order>106</sort_order>
-                        <action>background/adminhtml_myform/pagemanage</action>
+                        <action>adminhtml/background</action>
                     </background_adminform>
                 </children>
             </cms>

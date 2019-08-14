@@ -5,44 +5,69 @@ class Cybernetikz_Background_Block_Background extends Mage_Core_Block_Template{
 
     protected function _getCollection()
     {
-		$collection=Mage::getResourceModel('background/background_collection');
-				
 		$ccontrollername = Mage::app()->getFrontController()->getRequest()->getControllerName();
 		$cmodulename = Mage::app()->getFrontController()->getRequest()->getModuleName();
+		$rootCategoryId = Mage::app()->getStore()->getRootCategoryId();
 		
+		$collection = Mage::getResourceModel('background/background_collection');
+		// Check Category / Product Page
 		if($ccontrollername=='category' || $ccontrollername=="product"){
-			 $currentcategory = Mage::registry('current_category');
-			 if( $ccontrollername=="product"){
-				$catid = Mage::getModel('catalog/layer')->getCurrentCategory()->getId();
-				if(empty($catid) || ($catid==2) ){
-					$cat = Mage::registry('current_product')->getCategoryIds();
-					if($cat[0]==2){
-						$catid = $cat[1];
+			 // Product Page
+			 if($ccontrollername=="product"){
+				$catId = Mage::getModel('catalog/layer')->getCurrentCategory()->getId();
+				if(empty($catId) || ($catId==$rootCategoryId) ){
+					$currentProduct = Mage::registry('current_product');
+					if(!method_exists($currentProduct, 'getCategoryIds')){
+						$params = Mage::app()->getFrontController()->getRequest()->getParams();
+						if($params['cat_id']){
+							$catId = $params['cat_id'];
+							$categoryIds = NULL;
+						}else{
+							$categoryIds = Mage::getModel('catalog/product')->load($params['id'])->getCategoryIds();
+						}
 					}else{
-						$catid = $cat[0];
+						$categoryIds = $currentProduct->getCategoryIds();
+					}
+					
+					if(count($categoryIds)>0){
+						foreach($categoryIds as $categroyId){
+							if($categroyId != $rootCategoryId){
+								$catId = $categroyId;
+								break;
+							}
+						}
 					}
 				}
-				$collection->addFieldToFilter('page_id',"{$catid}");
+				
+				$collection->addFieldToFilter('page_id',"{$catId}");
 				$collection->addFieldToFilter('bg_type',"category");
+				
 			}else{
-				$collection->addFieldToFilter('page_id',"{$currentcategory->getEntityId()}");
+				// Category Page
+				$currentCategory = Mage::registry('current_category');
+				$collection->addFieldToFilter('page_id',"{$currentCategory->getEntityId()}");
 				$collection->addFieldToFilter('bg_type',"category");
+				
 			}
-					  
 		}
 		
+		// Check CMS Page
 		if($cmodulename=="cms"){
-			$pageid = Mage::getSingleton('cms/page')->getId();
-			$collection->addFieldToFilter('page_id',"{$pageid}");
+			$pageId = Mage::getSingleton('cms/page')->getId();
+			$collection->addFieldToFilter('page_id',"{$pageId}");
 			$collection->addFieldToFilter('bg_type',"{$cmodulename}");
 		}
-		
+				
 		$collection->getSelect()->order('id','ASC');
-		$collection->getSelect()->limit(1);
 		
-		//echo $collection->getSelect()->__toString();
-		//print_r($collection->getData());
-		//exit;
+		
+		// If background not found, check default background
+		if($collection->count() || $collection->count()==0){
+			$collection = Mage::getResourceModel('background/background_collection');
+			$collection->addFieldToFilter('page_id',"0");
+			$collection->addFieldToFilter('bg_type',"default");
+			$collection->getSelect()->order('id','ASC');
+		}
 		
 		return $collection;
 	
@@ -56,7 +81,7 @@ class Cybernetikz_Background_Block_Background extends Mage_Core_Block_Template{
         return $this->_backgroundCollection;
     }
 
-    public function getImageUrl($url)
+    public function getImageFullUrl($url)
     {
         return Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA).$url;
     }	

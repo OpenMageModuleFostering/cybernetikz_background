@@ -1,29 +1,29 @@
 <?xml version="1.0"?>
-<layout>
-    <background_adminhtml_myform_index>
-        <update handle="background_myform_index"/>
+<layout>	
+	<adminhtml_background_index>
+        <update handle="background_background_index"/>
+        <reference name="content">
+            <block type="adminhtml/template" name="background" template="background/grid.phtml"/>
+        </reference>
+    </adminhtml_background_index>
+
+    <adminhtml_background_new>
 		<reference name="head">
 			<action method="addJs"><script>backgroundjs/jquery-1.10.1.min.js</script></action>
+			<action method="addJs"><script>jscolor/jscolor.js</script></action>
 		</reference>
         <reference name="content">
-            <block type="adminhtml/template" name="myform" template="background/myform.phtml"/>
+            <block type="adminhtml/template" name="background" template="background/new.phtml"/>
         </reference>
-    </background_adminhtml_myform_index>
+    </adminhtml_background_new>
 	
-	<background_adminhtml_myform_pagemanage>
-        <update handle="background_myform_pagemanage"/>
-        <reference name="content">
-            <block type="adminhtml/template" name="myform" template="background/pagemanage.phtml"/>
-        </reference>
-    </background_adminhtml_myform_pagemanage>
-	
-	<background_adminhtml_myform_editpage>
-        <update handle="background_myform_editpage"/>
+	<adminhtml_background_edit>
 		<reference name="head">
 			<action method="addJs"><script>backgroundjs/jquery-1.10.1.min.js</script></action>
+			<action method="addJs"><script>jscolor/jscolor.js</script></action>
 		</reference>
         <reference name="content">
-            <block type="adminhtml/template" name="myform" template="background/editpage.phtml"/>
+            <block type="adminhtml/template" name="background" template="background/edit.phtml"/>
         </reference>
-    </background_adminhtml_myform_editpage>		
+    </adminhtml_background_edit>		
 </layout>

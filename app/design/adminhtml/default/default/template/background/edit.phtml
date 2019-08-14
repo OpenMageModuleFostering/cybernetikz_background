@@ -1,0 +1,272 @@
+<?php 
+	$id = $this->getRequest()->getParam('id',true);
+	$background = Mage::getModel('background/background')->load($id, 'id')->getData();
+?>
+<div class="content-header">
+    <table cellspacing="0" class="grid-header">
+        <tr>
+            <td><h3><?php echo $this->__('Edit %s', 'Background')?></h3></td>
+            <td class="a-right">
+                <button onclick="location.href='<?php echo Mage::helper("adminhtml")->getUrl("*/*");?>'" class="scalable back" type="button" <?php echo $this->__('Back')?>><span><?php echo $this->__('Back')?></span></button>
+                <button  type="button" class="scalable delete" onclick="deleteConfirm('Are you sure you want to do this?', '<?php echo $this->getUrl("*/*/delete/back/edit/id/".$background['id'].""); ?>')" title="<?php echo $this->__('Delete')?>"><span><span><span><?php echo $this->__('Delete')?></span></span></span></button>
+                <button onclick="editForm.submit()" class="scalable save" type="button" title="<?php echo $this->__('Save')?>"><span><span><span><?php echo $this->__('Save')?></span></span></span></button>
+                <button onclick="saveAndContinueEdit();" class="scalable save" type="button" title="<?php echo $this->__('Save and Continue Edit')?>"><span><span><span><?php echo $this->__('Save and Continue Edit')?></span></span></span></button>
+            </td>
+        </tr>
+    </table>
+</div>
+<div id="containment-wrapper" class="entry-edit">
+	<div class="entry-edit-head">
+        <h4 class="icon-head head-edit-form fieldset-legend"><?php echo $this->__('Edit %s', 'Background')?></h4>
+        <div class="form-buttons"></div>
+    </div>
+    <form id="edit_form" name="edit_form" method="post" action="<?php echo $this->getUrl('*/*/save')?>" enctype="multipart/form-data">
+        <input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />
+        <fieldset class="fieldset-wide">
+        	<table cellspacing="0" class="form-list">
+                <tr>
+                	<td width="50%">
+                        <table cellspacing="0" class="form-list">
+                            <tr>
+                                <td class="label"><?php echo $this->__('Page Type')?> <span class="required">*</span></td>
+                                <td class="label value">
+                                    <select name="bg_type" id="bg_type" class="required-entry" onchange="catgeturl(this.value);" disabled="disabled">
+                                        <option value="">-- Select Page Type --</option>
+                                        <option value="default"<?php echo ($background['bg_type']=="default")?' selected="selected"':'';?>>Default</option>
+                                        <option value="cms"<?php echo ($background['bg_type']=="cms")?' selected="selected"':'';?>>CMS Page</option>
+                                        <option value="category"<?php echo ($background['bg_type']=="category")?' selected="selected"':'';?>>Category</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr id="cms_page_list"<?php echo ($background['bg_type']!="cms")?'style="display:none;"':''?>>
+                                <td class="label"><?php echo $this->__('Page')?> <span class="required">*</span></td>
+                                <td class="label value">
+                                    <?php $cms_pages = Mage::getModel('cms/page')->getCollection();
+                                        $cms_pages->load();
+                                    ?>
+                                    
+                                    <select name="page_id" id="page_id" disabled="disabled">
+                                        <option value="">-- Select CMS Page --</option>
+                                        <?php foreach($cms_pages as $_page): ?>
+                                            <?php $data = $_page->getData(); ?>
+                                                <option value="<?php echo $data['page_id'] ?>"<?php if(($background['bg_type']=="cms") && ($background['page_id']==$data['page_id'])){?> selected="selected"<?php } ?>><?php echo $data['title']; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                            
+                            <tr id="category_list"<?php echo ($background['bg_type']!="category")?' style="display:none;"':'';?>>
+                                <td class="label"><?php echo $this->__('Category')?> <span class="required">*</span></td>
+                                <td class="label value">
+                                    <select name="category_id" id="category_id" disabled="disabled">
+                                        <option value="">-- Select Category --</option>
+                                        <?php foreach (Mage::app()->getWebsites() as $website):?>
+                                            <optgroup label="<?php echo $website->getName(); ?>">
+                                            <?php foreach ($website->getGroups() as $group):?>
+                                                <?php $stores = $group->getStores(); ?>
+                                                <optgroup label="<?php echo "&nbsp;&nbsp;".$group->getName(); ?>">
+                                                <?php foreach ($stores as $store): ?>
+                                                    <optgroup label="<?php echo "&nbsp;&nbsp;&nbsp;&nbsp;".$store->getName(); ?>"></optgroup>
+                                                <?php endforeach;?>
+                                                <?php
+                                                    $root_categoryid=Mage::app()->getStore($store->getStoreId())->getRootCategoryId();
+                                                    $_categories = Mage::getModel('catalog/category')->load($root_categoryid);
+                                                    $_categories = $_categories->getChildrenCategories();
+                                                    if (count($_categories) > 0):
+                                                ?>
+                                                    <?php foreach($_categories as $_category):?>
+                                                         <?php $_category = Mage::getModel('catalog/category')->load($_category->getId());?>
+                                                         <?php //print_r($_category->getData());exit; ?>
+                                                        <?php if($_category->getIsActive() && $_category->getName()!=""): ?>
+                                                        <option style="margin-left:25px;" value="<?php echo $_category->getId() ?>" <?php if(($background['bg_type']=="category") && ($background['page_id']==$_category->getId())){?> selected="selected" <?php } ?>><?php echo $_category->getName() ?></option>
+                                                            <?php $_subcategories = $_category->getChildrenCategories() ?>
+                                                            <?php if (count($_subcategories) > 0): ?>
+                                                                <?php foreach($_subcategories as $_subcategory): ?>
+                                                                    <?php if($_subcategory->getIsActive() && $_subcategory->getName()!=""): ?>
+                                                                    <option style="margin-left:35px;" value="<?php echo $_subcategory->getId() ?>" <?php if(($background['bg_type']=="category") && ($background['page_id']==$_subcategory->getId())){?> selected="selected" <?php } ?>><?php echo $_subcategory->getName() ?></option>
+                                                                    <?php $_subcategorylevel4 = Mage::getModel('catalog/category')->load($_subcategory->getId());?>
+                                                                    <?php $_level4subcategories = $_subcategorylevel4->getChildrenCategories() ?>
+                                                                    <?php if (count($_level4subcategories) > 0): ?>
+                                                                        <?php foreach($_level4subcategories as $_level4subcategory): ?>
+                                                                                <?php if($_level4subcategory->getIsActive() && $_level4subcategory->getName()!=""): ?>
+                                                                                <option style="margin-left:45px;" value="<?php echo $_level4subcategory->getId() ?>" <?php if(($background['bg_type']=="category") && ($background['page_id']==$_level4subcategory->getId())){?> selected="selected" <?php } ?>><?php echo $_level4subcategory->getName() ?></option>
+                                                                                <?php endif; ?>
+                                                                        <?php endforeach; ?>
+                                                                    <?php endif; ?>
+                                                                    <?php endif; ?>
+                                                                <?php endforeach; ?>
+                                                            <?php endif; ?>
+                                                        <?php endif; ?>    
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                                </optgroup>
+                                            <?php endforeach;?>
+                                            </optgroup>
+                                        <?php endforeach;?>	
+                                    </select>
+                                </td>
+                            </tr>
+                          
+                            <tr>
+                                <td class="label"><?php echo $this->__('Background Image')?> <span class="required">*</span></td>
+                                <td class="label value">
+                                    <input type="file" name="image_url" id="image_url" />
+                                    <?php if($background['image_url']){?>
+                                    <br /><br />
+                                   <a href="javascript:void(0);" onclick="window.open('<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA).$background['image_url'];?>','','width=600,height=400');"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA).$background['image_url'];?>" height="30" width="30" alt="Uplaod Image" border="0" style="border:none;"  /></a>
+                                   <?php }?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label"><?php echo $this->__('Background Selector')?> <span class="required">*</span></td>
+                                <td class="label value">
+                                    <select name="selector" id="selector" class="required-entry" onchange="customSelector(this.value);" disabled="disabled">
+                                        <option value="">-- Select Selector --</option>
+                                        <option value="body"<?php echo ($background['selector']=="body")?' selected="selected"':'';?>>Body</option>
+                                        <option value="custom"<?php echo ($background['selector']!="body")?' selected="selected"':'';?>>Custom</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr id="custom_selector_block"<?php echo ($background['selector']=="body")?' style="display:none;"':'';?>>
+                                <td class="label"><?php echo $this->__('Custom Selector')?> <span class="required">*</span></td>
+                                <td class="label value">
+                                    <input name="custom_selector" id="custom_selector" type="text"<?php echo ($background['selector']!="body")?' class="input-text required-entry" value="'.$background['selector'].'"':' class="input-text"';?> style="width: 274px ! important;" disabled="disabled" />
+                                    <p id="note_identifier" class="note"><span>Use CSS selector ie: class(.class-name) / id(#id) / others selector. For multi selector use , seperator like ".selector1, .selector2"</span></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label"><?php echo $this->__('Background Repeat')?> <span class="required">*</span></td>
+                                <td class="label value">
+                                    <?php $backgroundRepeats = array("repeat","repeat-x", "repeat-y", "no-repeat", "initial", "inherit"); ?>
+                                    <select name="repeat" id="repeat" class="required-entry">
+                                        <option value="">-- Select Repeat --</option>
+                                        <?php foreach($backgroundRepeats as $repeat):?>
+                                        <option value="<?php echo $repeat; ?>"<?php echo ($background['repeat']==$repeat)?' selected="selected"':'';?>><?php echo $repeat; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label"><?php echo $this->__('Background Position')?> <span class="required">*</span></td>
+                                <td class="label value">
+                                    <?php $backgroundPositions = array("left top","left center", "left bottom", "right top", "right center", "right bottom", "center top", "center center", "center bottom", "initial", "inherit"); ?>
+                                    <select name="position" id="position" class="required-entry">
+                                        <option value="">-- Select Position --</option>
+                                        <?php foreach($backgroundPositions as $position):?>
+                                        <option value="<?php echo $position; ?>"<?php echo ($background['position']==$position)?' selected="selected"':'';?>><?php echo $position; ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label"><?php echo $this->__('Background Attachment')?></td>
+                                <td class="label value">
+                                    <?php $backgroundAttachments = array("scroll","fixed", "local", "initial", "inherit"); ?>
+                                    <select name="attachment" id="attachment" class="required-entry">
+                                        <?php foreach($backgroundAttachments as $attachment):?>
+                                        <option value="<?php echo $attachment; ?>"<?php echo ($background['attachment']==$attachment)?' selected="selected"':'';?>><?php echo $attachment; ?></option>
+                                        <?php endforeach; ?>
+                                    </select> 
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label"><?php echo $this->__('Background Color')?></td>
+                                <td class="label value">
+                                    <input name="color" id="color" type="text" class="color input-text required-entry" value="<?php echo $background['color'];?>" style="width: 274px ! important;" />
+                                    <p id="note_identifier" class="note"><span>Please pick your preferred color.</span></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label"><?php echo $this->__('Background Size')?></td>
+                                <td class="label value">
+                                    <?php $backgroundSizes = array("auto","cover", "contain", "initial", "inherit"); ?>
+                                    <select name="size" id="size" class="required-entry">
+                                        <?php foreach($backgroundSizes as $size):?>
+                                        <option value="<?php echo $size; ?>"<?php echo ($background['size']==$size)?' selected="selected"':'';?>><?php echo $size; ?></option>
+                                        <?php endforeach; ?>
+                                    </select> 
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label"><?php echo $this->__('Background Origin')?></td>
+                                <td class="label value">
+                                    <?php $backgroundOrigins = array("padding-box","border-box", "content-box", "initial", "inherit"); ?>
+                                    <select name="origin" id="origin" class="required-entry">
+                                        <?php foreach($backgroundOrigins as $origin):?>
+                                        <option value="<?php echo $origin; ?>"<?php echo ($background['origin']==$origin)?' selected="selected"':'';?>><?php echo $origin; ?></option>
+                                        <?php endforeach; ?>
+                                    </select> 
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="label"><?php echo $this->__('Background Clip')?></td>
+                                <td class="label value">
+                                    <?php $backgroundClips = array("padding-box","border-box", "content-box", "initial", "inherit"); ?>
+                                    <select name="clip" id="clip" class="required-entry">
+                                        <?php foreach($backgroundClips as $clip):?>
+                                        <option value="<?php echo $clip; ?>"<?php echo ($background['clip']==$clip)?' selected="selected"':'';?>><?php echo $clip; ?></option>
+                                        <?php endforeach; ?>
+                                    </select> 
+                                </td>
+                            </tr>                
+                        </table>
+					</td>
+                    <td width="50%" class="a-center v-middle">
+                    	<a target="_blank" href="http://www.cybernetikz.com/store/magento-extension.html">
+                        	<img src="http://cybernetikz.com/images/cybernetikz-magento-extensions.jpg" align="Cybernetikz Magento Extensions" />
+                        </a>
+                    </td>
+                </tr>
+            </table>
+        </fieldset>
+         <input type="hidden" id="id" name="id" value="<?php echo $id; ?>" />
+    </form>
+    
+</div>
+<script type="text/javascript">	
+	function catgeturl(e){
+		if(e=="cms"){
+			jQuery("#cms_page_list").show();
+			jQuery("#cms_page_list select").addClass("required-entry");
+			jQuery("#category_list select").removeClass("required-entry");
+			jQuery("#category_list select").val("");
+			jQuery("#category_list").hide();
+			
+		}
+		if(e=="category"){
+			jQuery("#category_list").show();
+			jQuery("#category_list select").addClass("required-entry");
+			jQuery("#cms_page_list select").removeClass("required-entry");
+			jQuery("#cms_page_list select").val("");
+			jQuery("#cms_page_list").hide();
+		}
+		if(e=="" || e=="default"){
+			jQuery("#cms_page_list").hide();
+			jQuery("#category_list").hide();
+			jQuery("#category_list select").removeClass("required-entry");
+			jQuery("#cms_page_list select").removeClass("required-entry");
+			jQuery("#category_list select").val("");
+			jQuery("#cms_page_list select").val("");
+		}
+	}
+	
+	// Custom Selector
+	function customSelector(e){
+		if(e=="custom"){
+			jQuery("#custom_selector_block").show();
+			jQuery("#custom_selector_block input#custom_selector").addClass("required-entry");
+			
+		}else{
+			jQuery("#custom_selector_block").hide();
+			jQuery("#custom_selector_block input#custom_selector").removeClass("required-entry");
+			jQuery("#custom_selector_block input#custom_selector").val("");
+		}
+	}	
+	
+	// Form Validation	
+    var editForm = new varienForm('edit_form');
+	
+	function saveAndContinueEdit(){
+		editForm.submit($('edit_form').action+'back/edit/');
+	}
+</script>

@@ -1,0 +1,83 @@
+<div class="content-header">
+    <table cellspacing="0" class="grid-header">
+        <tr>
+            <td><h3><?php echo $this->__('Manage %s', 'Backgrounds')?></h3></td>
+            <td class="a-right">
+            	<button onclick="javascript:location.href='<?php echo $this->getUrl("*/*/new"); ?>'" class="scalable save" type="button" title="<?php echo $this->__('Add New %s', 'Background')?>"><span><?php echo $this->__('Add New %s', 'Background')?></span></button>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="entry-edit grid">
+	<?php 
+	$backgroundCollections = Mage::getModel('background/background')->getCollection()->getItems();
+	
+	?>
+    <table cellspacing="0" id="cmsPageGrid_table" class="data" width="100%">
+        <thead>
+            <tr class="headings">
+                <th width="25%" align="center"><?php echo $this->__('Page Title'); ?></th>
+                <th width="15%" align="center"><?php echo $this->__('Page Type'); ?></th>
+                <th width="20%" align="center"><?php echo $this->__('Background Image'); ?></th>
+                <th width="20%" align="center"><?php echo $this->__('Background Selector'); ?></th>
+                <th width="20%" align="center" class=" no-link last"><span class="nobr"><?php echo $this->__('Action'); ?></span></th>
+            </tr>
+        </thead>
+                
+        <tbody id="">
+        <?php if(count($backgroundCollections)>=1): ?>
+			<?php $i=0; foreach($backgroundCollections as $i=>$background): ?>
+                <tr class="<?php echo ($i%2==0)?"even":"odd"; ?>">
+                    <td align="center">
+						<?php 
+							if($background->getBgType()=="default"){
+								$pageTitle = "Default Background";
+							}elseif($background->getBgType()=="cms"){
+								$_page = Mage::getModel('cms/page')->load($background->getPageId());
+								$pageTitle = $_page->getTitle();
+							}else{
+								$_category = Mage::getModel('catalog/category')->load($background->getPageId());
+								$pageTitle = $_category->getName();
+							}							
+							echo $pageTitle; 
+						?>
+                    </td>
+                    <td align="center">
+						<?php 
+							if($background->getBgType()=="default"){
+								$pageType = "Default";
+							}elseif($background->getBgType()=="cms"){
+								$pageType = "CMS Page";
+							}else{
+								$pageType = "Category Page";
+							}
+							
+							echo $pageType;
+						?>
+                    </td>
+                    <td align="center">
+                       <a href="javascript:void(0);" onclick="window.open('<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA).$background->getImageUrl();?>','','width=600,height=400');"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA).$background->getImageUrl();?>" height="30" width="30" alt="<?php echo $pageTitle; ?>" border="0" style="border:none;"  /></a>
+                    </td>
+                    <td align="center">
+                    	<?php echo $background->getSelector(); ?>
+                    </td>
+                    <td align="center">
+                    	<a href="<?php echo $this->getUrl("*/*/edit/id/{$background->getId()}"); ?>" title="<?php echo $this->__('Edit')?>"><?php echo $this->__('Edit')?></a>&nbsp;/&nbsp;<a onclick="deleteConfirm('Are you sure you want to do this?', '<?php echo $this->getUrl("*/*/delete/id/{$background->getId()}"); ?>')" href="javascript:void(0);<?php //echo $this->getUrl("*/*/delete/id/{$background->getId()}"); ?>" title="<?php echo $this->__('Delete')?>"><?php echo $this->__('Delete')?></a>
+                    </td>
+                </tr>
+            <?php $i++; endforeach; ?>
+         <?php else: ?>
+             <tr class="<?php echo ($i%2==0)?"even":"odd"; ?>">
+                <td colspan="5" align="center">No background found.</td>
+            </tr>
+        <?php endif; ?>
+		</tbody>
+	</table>
+</div>
+<style type="text/css">
+table tr td,
+table tr th{
+	text-align:center;
+	vertical-align:middle;
+	}
+</style>
