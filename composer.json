@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/Cybernetikz_Background",
+    "type": "magento-module",
+    "license": "Open-Software-License-(OSL-3.0)",
+    "homepage": "",
+    "description": "Upload Unique Background Image for Each CMS & Category Page. Product page will use Category Background Image.",
+    "authors": [
+    {
+        "name": "CyberNetikz",
+        "email": "admin@cybernetikz.com"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<layout>
+    <background_adminhtml_myform_index>
+        <update handle="background_myform_index"/>
+        <reference name="content">
+            <block type="adminhtml/template" name="myform" template="background/myform.phtml"/>
+        </reference>
+    </background_adminhtml_myform_index>
+	
+	<background_adminhtml_myform_pagemanage>
+        <update handle="background_myform_pagemanage"/>
+        <reference name="content">
+            <block type="adminhtml/template" name="myform" template="background/pagemanage.phtml"/>
+        </reference>
+    </background_adminhtml_myform_pagemanage>
+	
+	<background_adminhtml_myform_editpage>
+        <update handle="background_myform_editpage"/>
+        <reference name="content">
+            <block type="adminhtml/template" name="myform" template="background/editpage.phtml"/>
+        </reference>
+    </background_adminhtml_myform_editpage>		
+</layout>

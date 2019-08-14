@@ -1,0 +1,154 @@
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<script type="text/javascript">
+	jQuery.noConflict();
+</script>
+<?php 
+	$id = $this->getRequest()->getParam('id',true);
+	$connection = Mage::getSingleton('core/resource')->getConnection('core_write');	
+	$signgleinfo = Mage::getModel('background/background')->load($id, 'id')->getData();
+?>
+<div class="content-header">
+    <table cellspacing="0" class="grid-header">
+        <tr>
+            <td><h3><?php echo $this->__('Edit Background')?></h3></td>
+            <td class="a-right">
+                <button onclick="location.href='<?php echo Mage::helper("adminhtml")->getUrl("background/adminhtml_myform/pagemanage");?>'" class="scalable back" type="button"><span>Back</span></button> <button onclick="editForm.submit()" class="scalable save" type="button"><span>Submit</span></button>
+            </td>
+        </tr>
+    </table>
+</div>
+<div id="containment-wrapper" class="entry-edit">
+    <form id="edit_form" name="edit_form" method="post" action="<?php echo $this->getUrl('*/*/save')?>" enctype="multipart/form-data">
+        <input name="form_key" type="hidden" value="<?php echo Mage::getSingleton('core/session')->getFormKey() ?>" />
+        <fieldset id="my-fieldset">
+            <table cellspacing="0" class="form-list">
+                <tr>
+                    <td class="label"><?php echo $this->__('Page Type')?> <span class="required">*</span></td>
+                    <td class="input-ele">
+                    	<select name="bg_type" id="bg_type" class="required-entry" style="width:200px;" onchange="catgeturl(this.value);" disabled="disabled">
+                        	<option value="">Select Page Type</option>
+							<option value="cms" <?php echo ($signgleinfo['bg_type']=="cms")?'selected="selected"':"";?>>CMS Page</option>
+                            <option value="category" <?php echo ($signgleinfo['bg_type']=="category")?'selected="selected"':"";?>>Category</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr id="cms_page_list" style="<?php echo ($signgleinfo['bg_type']!="cms")?'display:none':''?>;">
+                    <td class="label"><?php echo $this->__('Page')?> <span class="required">*</span></td>
+                    <td class="input-ele">
+                    	<?php $cms_pages = Mage::getModel('cms/page')->getCollection();
+							$cms_pages->load();
+						?>
+                        
+                    	<select name="page_id" id="page_id" style="width:200px;" disabled="disabled">
+                        	<option value="">Select Page</option>
+							<?php foreach($cms_pages as $_page): ?>
+                            	<?php $data = $_page->getData(); ?>
+                                	<option value="<?php echo $data['page_id'] ?>" <?php if(($signgleinfo['bg_type']=="cms") && ($signgleinfo['page_id']==$data['page_id'])){?> selected="selected" <?php } ?>><?php echo $data['title']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </td>
+                </tr>
+                
+                <tr id="category_list" style="<?php echo ($signgleinfo['bg_type']!="category")?'display:none':'';?>;">
+                    <td class="label"><?php echo $this->__('Category')?> <span class="required">*</span></td>
+                    <td class="input-ele">
+                    	<select name="category_id" id="category_id" style="width:200px;" <?php echo ($signgleinfo['bg_type']=="category")?'disabled="disabled"':''?>>
+                        	<option value="">Select Category</option>
+                            <?php foreach (Mage::app()->getWebsites() as $website):?>
+                                <optgroup label="<?php echo $website->getName(); ?>">
+                                <?php foreach ($website->getGroups() as $group):?>
+                                    <?php $stores = $group->getStores(); ?>
+                                    <optgroup label="<?php echo "&nbsp;&nbsp;".$group->getName(); ?>">
+                                    <?php foreach ($stores as $store): ?>
+                                        <optgroup label="<?php echo "&nbsp;&nbsp;&nbsp;&nbsp;".$store->getName(); ?>"></optgroup>
+                                    <?php endforeach;?>
+                                    <?php
+                                        $root_categoryid=Mage::app()->getStore($store->getStoreId())->getRootCategoryId();
+                                        $_categories = Mage::getModel('catalog/category')->load($root_categoryid);
+                                        $_categories = $_categories->getChildrenCategories();
+                                        if (count($_categories) > 0):
+                                    ?>
+                                        <?php foreach($_categories as $_category):?>
+                                             <?php $_category = Mage::getModel('catalog/category')->load($_category->getId());?>
+                                             <?php //print_r($_category->getData());exit; ?>
+                                            <?php if($_category->getIsActive() && $_category->getName()!=""): ?>
+                                            <option style="margin-left:25px;" value="<?php echo $_category->getId() ?>" <?php if(($signgleinfo['bg_type']=="category") && ($signgleinfo['page_id']==$_category->getId())){?> selected="selected" <?php } ?>><?php echo $_category->getName() ?></option>
+                                                <?php $_subcategories = $_category->getChildrenCategories() ?>
+                                                <?php if (count($_subcategories) > 0): ?>
+                                                    <?php foreach($_subcategories as $_subcategory): ?>
+														<?php if($_subcategory->getIsActive() && $_subcategory->getName()!=""): ?>
+                                                        <option style="margin-left:35px;" value="<?php echo $_subcategory->getId() ?>" <?php if(($signgleinfo['bg_type']=="category") && ($signgleinfo['page_id']==$_subcategory->getId())){?> selected="selected" <?php } ?>><?php echo $_subcategory->getName() ?></option>
+														<?php $_subcategorylevel4 = Mage::getModel('catalog/category')->load($_subcategory->getId());?>
+                                                        <?php $_level4subcategories = $_subcategorylevel4->getChildrenCategories() ?>
+                                                        <?php if (count($_level4subcategories) > 0): ?>
+                                                            <?php foreach($_level4subcategories as $_level4subcategory): ?>
+                                                                    <?php if($_level4subcategory->getIsActive() && $_level4subcategory->getName()!=""): ?>
+                                                                    <option style="margin-left:45px;" value="<?php echo $_level4subcategory->getId() ?>" <?php if(($signgleinfo['bg_type']=="category") && ($signgleinfo['page_id']==$_level4subcategory->getId())){?> selected="selected" <?php } ?>><?php echo $_level4subcategory->getName() ?></option>
+                                                                    <?php endif; ?>
+                                                            <?php endforeach; ?>
+                                                        <?php endif; ?>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            <?php endif; ?>    
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                    </optgroup>
+                                <?php endforeach;?>
+                                </optgroup>
+                            <?php endforeach;?>	
+                        </select>
+                    </td>
+                </tr>
+              
+				<tr>
+                    <td class="label"><?php echo $this->__('Background Image')?> <span class="required">*</span></td>
+                    <td class="input-ele">
+                        <input type="file" name="image_url" id="image_url" class="required-entry"  />
+                        <?php if($signgleinfo['image_url']){?>
+                        <br /><?php /*?><input type="checkbox" name="[image_url][delete]" id="delete" value="1" onclick="jQuery('#image_url').removeClass('required-entry');" /><?php */?><br />
+                       <a href="javascript:void(0);" onclick="window.open('<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA).$signgleinfo['image_url'];?>','','width=600,height=400');"><img src="<?php echo Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA).$signgleinfo['image_url'];?>" height="30" width="30" alt="Uplaod Image" border="0" style="border:none;"  /></a>
+                       <?php }?>
+                    </td>
+                </tr>
+
+                
+            </table>
+        </fieldset>
+         <input type="hidden" id="id" name="id" value="<?php echo $id; ?>" />
+    </form>
+    
+</div>
+<script type="text/javascript">	
+	function catgeturl(e){
+		if(e=="cms"){
+			jQuery("#cms_page_list").show();
+			jQuery("#cms_page_list select").addClass("required-entry");
+			jQuery("#category_list select").removeClass("required-entry");
+			jQuery("#category_list select").val("");
+			jQuery("#category_list").hide();
+			
+		}
+		if(e=="category"){
+			jQuery("#category_list").show();
+			jQuery("#category_list select").addClass("required-entry");
+			jQuery("#cms_page_list select").removeClass("required-entry");
+			jQuery("#cms_page_list select").val("");
+			jQuery("#cms_page_list").hide();
+		}
+		if(e==""){
+			jQuery("#cms_page_list").hide();
+			jQuery("#category_list").hide();
+			jQuery("#category_list select").removeClass("required-entry");
+			jQuery("#cms_page_list select").removeClass("required-entry");
+			jQuery("#category_list select").val("");
+			jQuery("#cms_page_list select").val("");
+		}
+	}
+	
+	jQuery(document).ready(function(){
+		
+	});
+	
+    var editForm = new varienForm('edit_form');
+</script>
