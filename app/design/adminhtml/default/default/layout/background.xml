@@ -2,6 +2,9 @@
 <layout>
     <background_adminhtml_myform_index>
         <update handle="background_myform_index"/>
+		<reference name="head">
+			<action method="addJs"><script>backgroundjs/jquery-1.10.1.min.js</script></action>
+		</reference>
         <reference name="content">
             <block type="adminhtml/template" name="myform" template="background/myform.phtml"/>
         </reference>
@@ -16,6 +19,9 @@
 	
 	<background_adminhtml_myform_editpage>
         <update handle="background_myform_editpage"/>
+		<reference name="head">
+			<action method="addJs"><script>backgroundjs/jquery-1.10.1.min.js</script></action>
+		</reference>
         <reference name="content">
             <block type="adminhtml/template" name="myform" template="background/editpage.phtml"/>
         </reference>
