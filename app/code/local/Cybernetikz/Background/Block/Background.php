@@ -1,17 +1,20 @@
 <?php
 class Cybernetikz_Background_Block_Background extends Mage_Core_Block_Template{
 	
-	protected $_backgroundCollection = null;
-
+	protected $_backgroundCollection = NULL;
+	
+	protected $_backgroundColCount = NULL;
+	
     protected function _getCollection()
     {
 		$ccontrollername = Mage::app()->getFrontController()->getRequest()->getControllerName();
-		$cmodulename = Mage::app()->getFrontController()->getRequest()->getModuleName();
-		$rootCategoryId = Mage::app()->getStore()->getRootCategoryId();
+		$cmodulename = Mage::app()->getFrontController()->getRequest()->getModuleName();		
 		
-		$collection = Mage::getResourceModel('background/background_collection');
 		// Check Category / Product Page
 		if($ccontrollername=='category' || $ccontrollername=="product"){
+			 $rootCategoryId = Mage::app()->getStore()->getRootCategoryId();
+			 $collection = Mage::getResourceModel('background/background_collection');
+			 
 			 // Product Page
 			 if($ccontrollername=="product"){
 				$catId = Mage::getModel('catalog/layer')->getCurrentCategory()->getId();
@@ -49,26 +52,34 @@ class Cybernetikz_Background_Block_Background extends Mage_Core_Block_Template{
 				$collection->addFieldToFilter('bg_type',"category");
 				
 			}
+			
+			$collection->getSelect()->order('id','ASC');
+			
+			// Count Select Bangrounds
+			$this->_backgroundColCount = $collection->count();
+			
 		}
 		
 		// Check CMS Page
 		if($cmodulename=="cms"){
 			$pageId = Mage::getSingleton('cms/page')->getId();
+			$collection = Mage::getResourceModel('background/background_collection');
 			$collection->addFieldToFilter('page_id',"{$pageId}");
 			$collection->addFieldToFilter('bg_type',"{$cmodulename}");
+			$collection->getSelect()->order('id','ASC');
+			
+			// Count Select Bangrounds
+			$this->_backgroundColCount = $collection->count();
 		}
 				
-		$collection->getSelect()->order('id','ASC');
-		
-		
 		// If background not found, check default background
-		if(!$collection->count() || $collection->count()==0){
+		if(empty($this->_backgroundColCount) || $this->_backgroundColCount==0){
 			$collection = Mage::getResourceModel('background/background_collection');
 			$collection->addFieldToFilter('page_id',"0");
 			$collection->addFieldToFilter('bg_type',"default");
 			$collection->getSelect()->order('id','ASC');
 		}
-		
+				
 		return $collection;
 	
     }
