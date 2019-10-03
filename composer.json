@@ -1,7 +1,7 @@
 {
-    "name": "OpenMageModuleFostering\/Cybernetikz_Background",
+    "name": "openmage-module-fostering\/cybernetikz_background",
     "type": "magento-module",
-    "license": "Open-Software-License-(OSL-3.0)",
+    "license": "OSL-3.0",
     "homepage": "",
     "description": "Upload Unique Background Image for Each CMS & Category Page. Product page will use Category Background Image.",
     "authors": [
